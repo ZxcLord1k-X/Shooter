@@ -1,8 +1,9 @@
 from pygame import *
+from random import randint
 
 img_back = "galaxy.jpg"
 img_hero = "rocket.png"
-
+img_enemy = "ufo.png"
 
 
 win_widht = 700
@@ -19,6 +20,12 @@ mixer.init()
 mixer.music.load("space.ogg")
 mixer.music.play(-1)
 fire_sound = mixer.Sound("fire.ogg")
+
+font.init()
+font2 = font.Font(None, 36)
+
+score = 0
+lost = 0
 
 class GameSprite(sprite.Sprite):
     def __init__(self, player_image, player_x, player_y, size_x, size_y, player_speed):
@@ -44,7 +51,21 @@ class Player(GameSprite):
     def fire(self):
         pass
 
+class Enemy(GameSprite):
+    def update(self):
+        self.rect.y += self.speed
+        global lost
+        if self.rect.y > win_height:
+            self.rect.x = randint(80, win_widht - 80)
+            self.rect.y = 0
+            lost = lost + 1
+
 ship = Player(img_hero, 5, win_height - 100, 80, 100, 10)
+
+monsters = sprite.Group()
+for i in range(1, 6):
+    monster = Enemy(img_enemy, randint(80, win_widht - 80), -40, 80, 50, randint(1, 5))
+    monsters.add(monster)
 
 while run:
     for e in event.get():
@@ -53,8 +74,17 @@ while run:
 
     if not finish:
         window.blit(background, (0, 0))
+
+        text = font2.render("Рахунок: " + str(score), 1, (255, 255, 255))
+        window.blit(text, (10, 20))
+
+        text_lose = font2.render("Пропущено: " + str(lost), 1, (255, 255, 255))
+        window.blit(text_lose, (10, 50))
         ship.update()
         ship.reset()
+
+        monsters.update()
+        monsters.draw(window)
 
     display.update()
     time.delay(50)
